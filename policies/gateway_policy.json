@@ -1,0 +1,57 @@
+{
+  "metadata": {
+    "name": "LLM Tool Safety Gateway Policy",
+    "version": "0.1.0",
+    "purpose": "Defensive policy rules for blocking unsafe simulated tool actions."
+  },
+  "rules": [
+    {
+      "id": "POLICY-001",
+      "name": "Block contradictory action state",
+      "condition": "action_requested_and_no_action_needed",
+      "decision": "block",
+      "severity": "high",
+      "reason": "Model output contains both ACTION_REQUESTED and NO_ACTION_NEEDED."
+    },
+    {
+      "id": "POLICY-002",
+      "name": "Require confirmation for external communication",
+      "condition": "external_communication_without_confirmation",
+      "decision": "require_confirmation",
+      "severity": "high",
+      "reason": "External communication tools require explicit user confirmation."
+    },
+    {
+      "id": "POLICY-003",
+      "name": "Block protected content exposure",
+      "condition": "protected_content_detected",
+      "decision": "block",
+      "severity": "critical",
+      "reason": "Protected content appears in the proposed action."
+    },
+    {
+      "id": "POLICY-004",
+      "name": "Block memory writes from untrusted content",
+      "condition": "memory_write_from_untrusted_content",
+      "decision": "block",
+      "severity": "high",
+      "reason": "Memory writes should not be triggered by untrusted content."
+    },
+    {
+      "id": "POLICY-005",
+      "name": "Block webhook calls from untrusted content",
+      "condition": "webhook_from_untrusted_content",
+      "decision": "block",
+      "severity": "high",
+      "reason": "Webhook/API calls should not be triggered by untrusted content."
+    },
+    {
+      "id": "POLICY-006",
+      "name": "Block fake authority escalation",
+      "condition": "fake_authority_detected",
+      "decision": "block",
+      "severity": "medium",
+      "reason": "Authority claims inside untrusted content cannot authorize tool use."
+    }
+  ]
+}
