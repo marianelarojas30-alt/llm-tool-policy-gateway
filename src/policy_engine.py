@@ -25,13 +25,13 @@ READ_TOOLS = {
 }
 
 @lru_cache(maxsize=1)
-def load_policy() -> Dict[str, Any]:
-    return json.loads(POLICY_PATH.read_text(encoding="utf-8"))
+def load_rules() -> Dict[str, Dict[str, Any]]:
+    policy = json.loads(POLICY_PATH.read_text(encoding="utf-8"))
+    return {rule["condition"]: rule for rule in policy["rules"]}
 
 def evaluate_policy(parsed: Dict[str, Any], scenario: Dict[str, Any]) -> Dict[str, Any]:
     triggered_rules: List[Dict[str, Any]] = []
-    policy = load_policy()
-    rules = {rule["condition"]: rule for rule in policy["rules"]}
+    rules = load_rules()
 
     tool = parsed.get("detected_tool")
     source_trust = scenario.get("source_trust")
