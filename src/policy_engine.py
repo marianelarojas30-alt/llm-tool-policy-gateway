@@ -1,6 +1,7 @@
 from typing import Dict, Any, List
 import json
 from pathlib import Path
+from functools import lru_cache
 
 ROOT = Path(__file__).resolve().parents[1]
 POLICY_PATH = ROOT / "policies" / "gateway_policy.json"
@@ -23,6 +24,7 @@ READ_TOOLS = {
     "retrieve_context_simulated",
 }
 
+@lru_cache(maxsize=1)
 def load_policy() -> Dict[str, Any]:
     return json.loads(POLICY_PATH.read_text(encoding="utf-8"))
 
