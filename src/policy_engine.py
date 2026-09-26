@@ -1,6 +1,7 @@
 from typing import Dict, Any, List
 import json
 from pathlib import Path
+from functools import lru_cache
 
 ROOT = Path(__file__).resolve().parents[1]
 POLICY_PATH = ROOT / "policies" / "gateway_policy.json"
@@ -14,13 +15,23 @@ MEMORY_TOOLS = {
     "write_memory_simulated",
 }
 
-def load_policy() -> Dict[str, Any]:
-    return json.loads(POLICY_PATH.read_text(encoding="utf-8"))
+DESTRUCTIVE_TOOLS = {
+    "delete_file_simulated",
+}
+
+READ_TOOLS = {
+    "read_file_simulated",
+    "retrieve_context_simulated",
+}
+
+@lru_cache(maxsize=1)
+def load_rules() -> Dict[str, Dict[str, Any]]:
+    policy = json.loads(POLICY_PATH.read_text(encoding="utf-8"))
+    return {rule["condition"]: rule for rule in policy["rules"]}
 
 def evaluate_policy(parsed: Dict[str, Any], scenario: Dict[str, Any]) -> Dict[str, Any]:
     triggered_rules: List[Dict[str, Any]] = []
-    policy = load_policy()
-    rules = {rule["condition"]: rule for rule in policy["rules"]}
+    rules = load_rules()
 
     tool = parsed.get("detected_tool")
     source_trust = scenario.get("source_trust")
@@ -30,6 +41,15 @@ def evaluate_policy(parsed: Dict[str, Any], scenario: Dict[str, Any]) -> Dict[st
 
     if parsed.get("contradictory_action_state"):
         triggered_rules.append(rules["action_requested_and_no_action_needed"])
+
+    if parsed.get("action_requested") and not tool:
+        triggered_rules.append(rules["unknown_tool_requested"])
+
+    if tool in DESTRUCTIVE_TOOLS and parsed.get("action_requested") and not authorized:
+        triggered_rules.append(rules["destructive_action_without_confirmation"])
+
+    if tool in READ_TOOLS and parsed.get("action_requested") and source_trust != "user_request":
+        triggered_rules.append(rules["filesystem_read_from_untrusted_content"])
 
     if tool in EXTERNAL_TOOLS and parsed.get("action_requested") and not authorized:
         triggered_rules.append(rules["external_communication_without_confirmation"])
