@@ -19,7 +19,9 @@ def main():
     save_results(results)
 
     passed = sum(1 for r in results if r["passed"])
-    print(f"Passed {passed}/{len(results)} gateway tests.")
+    total = len(results)
+    print(f"Passed {passed}/{total} gateway tests.")
+    return 0 if passed == total else 1
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())
