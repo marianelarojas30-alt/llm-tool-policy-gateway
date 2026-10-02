@@ -100,3 +100,7 @@ This project is a **policy gateway**, not an autonomous agent.
 It does not independently plan, monitor live systems, or adapt its own behavior. It deterministically reviews proposed LLM tool-use text and applies policy rules before simulated execution.
 
 That makes the project narrower, safer, and more honest.
+
+## License
+
+Free for **noncommercial use** under the [PolyForm Noncommercial License 1.0.0](LICENSE). Selling it, charging for it, or any commercial use requires a separate written commercial license from the author, Marianela Bourgault (contact through GitHub). Copies and modified versions must keep the copyright notice.
