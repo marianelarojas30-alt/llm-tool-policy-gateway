@@ -1,7 +1,7 @@
 {
   "metadata": {
     "name": "LLM Tool Safety Gateway Policy",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "purpose": "Defensive policy rules for blocking unsafe simulated tool actions."
   },
   "rules": [
@@ -52,6 +52,30 @@
       "decision": "block",
       "severity": "medium",
       "reason": "Authority claims inside untrusted content cannot authorize tool use."
+    },
+    {
+      "id": "POLICY-007",
+      "name": "Block unknown tool requests",
+      "condition": "unknown_tool_requested",
+      "decision": "block",
+      "severity": "critical",
+      "reason": "Unknown tools are denied by default so the gateway fails closed."
+    },
+    {
+      "id": "POLICY-008",
+      "name": "Require confirmation for destructive actions",
+      "condition": "destructive_action_without_confirmation",
+      "decision": "require_confirmation",
+      "severity": "critical",
+      "reason": "Destructive filesystem actions require explicit trusted-user authorization."
+    },
+    {
+      "id": "POLICY-009",
+      "name": "Block file/context reads from untrusted content",
+      "condition": "filesystem_read_from_untrusted_content",
+      "decision": "block",
+      "severity": "high",
+      "reason": "Untrusted content cannot authorize reading local files or private context."
     }
   ]
 }
