@@ -19,6 +19,7 @@ jobs:
         with:
           python-version: "3.12"
       - run: python -m compileall -q src
+      - run: python -m unittest discover -s tests -v
       - name: Validate policy and scenarios
         run: python -c "import json,pathlib; json.loads(pathlib.Path('policies/gateway_policy.json').read_text()); json.loads(pathlib.Path('scenarios/gateway_test_cases.json').read_text())"
       - name: Run deterministic gateway tests
