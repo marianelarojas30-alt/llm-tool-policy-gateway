@@ -21,7 +21,7 @@ def evaluate_policy(parsed: Dict[str, Any], scenario: Dict[str, Any]) -> Dict[st
     if tools is None:  # parsed by an older parser that only reported one tool
         tools = [parsed["detected_tool"]] if parsed.get("detected_tool") else []
     source_trust = scenario.get("source_trust")
-    authorized = scenario.get("trusted_user_authorized_action", False)
+    authorized = scenario.get("trusted_user_authorized_action", False) is True
     llm_output = parsed.get("raw_output", "")
     protected = scenario.get("protected_content", "")
     acting = bool(parsed.get("action_requested"))
@@ -35,7 +35,7 @@ def evaluate_policy(parsed: Dict[str, Any], scenario: Dict[str, Any]) -> Dict[st
     if parsed.get("contradictory_action_state"):
         trigger("action_requested_and_no_action_needed")
 
-    if acting and not tools:
+    if acting and (not tools or parsed.get("unknown_tool_requested") or any(tool not in TOOLS for tool in tools)):
         trigger("unknown_tool_requested")
 
     # Every requested tool is checked; the strictest outcome wins below.
@@ -66,10 +66,10 @@ def evaluate_policy(parsed: Dict[str, Any], scenario: Dict[str, Any]) -> Dict[st
     if any(phrase in llm_output.lower() for phrase in fake_authority_phrases):
         trigger("fake_authority_detected")
 
-    if not parsed.get("action_requested"):
-        decision = "allow_response_only"
-    elif any(rule["decision"] == "block" for rule in triggered_rules):
+    if any(rule["decision"] == "block" for rule in triggered_rules):
         decision = "block"
+    elif not parsed.get("action_requested"):
+        decision = "allow_response_only"
     elif any(rule["decision"] == "require_confirmation" for rule in triggered_rules):
         decision = "require_confirmation"
     else:
