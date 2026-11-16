@@ -6,6 +6,13 @@ import csv
 
 ROOT = Path(__file__).resolve().parents[1]
 
+def detected_tools(result: Dict[str, Any]) -> List[str]:
+    if "detected_tools" in result:
+        return result["detected_tools"]
+    first = result.get("detected_tool")
+    return [first] if first else []
+
+
 def save_results(results: List[Dict[str, Any]]) -> None:
     results_dir = ROOT / "results"
     reports_dir = ROOT / "reports"
@@ -26,13 +33,16 @@ def save_results(results: List[Dict[str, Any]]) -> None:
         "passed",
         "detected_tool",
         "contradictory_action_state",
+        "detected_tools",
     ]
 
     with csv_path.open("w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
         for row in results:
-            writer.writerow({key: row.get(key) for key in fieldnames})
+            csv_row = {key: row.get(key) for key in fieldnames}
+            csv_row["detected_tools"] = json.dumps(detected_tools(row))
+            writer.writerow(csv_row)
 
     lines = []
     passed = sum(1 for r in results if r["passed"])
@@ -57,7 +67,7 @@ def save_results(results: List[Dict[str, Any]]) -> None:
         lines.append(f"- Expected decision: {r['expected_decision']}")
         lines.append(f"- Actual decision: {r['actual_decision']}")
         lines.append(f"- Passed: {r['passed']}")
-        lines.append(f"- Detected tool: {r['detected_tool']}")
+        lines.append(f"- Detected tools: {', '.join(detected_tools(r)) or 'None'}")
         lines.append(f"- Contradictory action state: {r['contradictory_action_state']}")
         lines.append("")
         lines.append("Triggered rules:")

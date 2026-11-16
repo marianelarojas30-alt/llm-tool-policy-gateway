@@ -14,6 +14,7 @@ def gateway_decision(scenario: Dict[str, Any]) -> Dict[str, Any]:
         "actual_decision": policy_result["decision"],
         "passed": policy_result["decision"] == scenario["expected_decision"],
         "detected_tool": policy_result["detected_tool"],
+        "detected_tools": policy_result["detected_tools"],
         "contradictory_action_state": policy_result["contradictory_action_state"],
         "triggered_rules": policy_result["triggered_rules"],
         "llm_output": scenario["llm_output"],
